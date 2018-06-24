@@ -1,0 +1,132 @@
+{
+	"info": {
+		"_postman_id": "86dc8095-aa46-4f7a-826c-4c9963f284a8",
+		"name": "Caesium",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get bulb list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:5000/api/v1/bulbs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"v1",
+						"bulbs"
+					]
+				},
+				"description": "Get bulb list"
+			},
+			"response": []
+		},
+		{
+			"name": "65539 -> off",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:5000/api/v1/bulb/65539/off",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"v1",
+						"bulb",
+						"65539",
+						"off"
+					]
+				},
+				"description": "65539 -> off"
+			},
+			"response": []
+		},
+		{
+			"name": "65539 -> on",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:5000/api/v1/bulb/65539/on",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"v1",
+						"bulb",
+						"65539",
+						"on"
+					]
+				},
+				"description": "65539 -> on"
+			},
+			"response": []
+		},
+		{
+			"name": "65540 -> off",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:5000/api/v1/bulb/65540/off",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"v1",
+						"bulb",
+						"65540",
+						"off"
+					]
+				},
+				"description": "65540 -> off"
+			},
+			"response": []
+		},
+		{
+			"name": "65540 -> on",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:5000/api/v1/bulb/65540/on",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"v1",
+						"bulb",
+						"65540",
+						"on"
+					]
+				},
+				"description": "65540 -> on"
+			},
+			"response": []
+		}
+	]
+}
