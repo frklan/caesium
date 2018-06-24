@@ -2,7 +2,11 @@
 
 var express = require('express');
 const tradfri = require('../../../tradfri');
+const verifyJWT = require('../../../lib/jwt.js').verifyJWT;
+
 var api = express.Router();
+
+api.all('*', verifyJWT);
 
 api.get('/', function(req, res, next) {
   res.json({ error: 'Hello! Nothing to see here..' });

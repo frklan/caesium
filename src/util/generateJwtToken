@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+
+'use strict'
+require('dotenv').config()
+const minimist = require('minimist');
+const createJWToken = require('../lib/jwt').createJWToken;
+
+const args = minimist(process.argv.slice(2))
+const id = args.id || 'caesium_api_user'
+const data = args.data || ''
+const ttl = parseInt(args.ttl) || 3600
+
+if(args.help) {
+  console.log(`
+  usage: generateJwtToken [--id] [--ttl] [--data]
+
+    --id caesium_api_user            id of API user, only 'caesium_api_user' is currently supported
+    --ttl <seconds>                 expiration time for the token, in seconds
+    --data <data>                   string of data to include in the JWT, currently not used
+
+    N.B. Token is based on secret set in $JWT_SECRET environment variable.
+`);
+} else if(process.env.JWT_SECRET === undefined) {
+  console.error('please set environment variable JWT_SECRET')
+} else {
+  const token = createJWToken({ sessionData: {user: id, data: data}, maxAge: ttl });
+
+  console.log(`ID: ${id}`);
+  console.log(`TTL: ${ttl}`);
+  console.log(`Extra data: ${data || '<not set>'}`);
+  console.log(`JWT token: ${token}`);
+}
