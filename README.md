@@ -103,7 +103,7 @@ If the API is served openly on the internet it is recommended to encrypt all tra
 5. Set the following environment variables 
 
    ```shell
-   SSL_CERT_FILE=../conf/live/[YOUR-DOMAIN]/cert.pem
+   SSL_CERT_FILE=../conf/live/[YOUR-DOMAIN]/fullchain.pem
    SSL_KEY_FILE=../conf/live/[YOUR-DOMAIN]/privkey.pem
    USE_SSL=TRUE
    ```
