@@ -4,11 +4,25 @@ require('dotenv').config()
 var app = require('./app');
 var debug = require('debug')('caesium:server');
 var http = require('http');
+const https = require('https');
+const fs = require('fs');
 
+let server;
 var port = normalizePort(process.env.PORT || '5000');
 app.set('port', port);
 
-var server = http.createServer(app);
+ // Do we use SSL or not?
+ // N.B. See readme how to generate the SSL certificate.
+if((process.env.USE_SSL === 'TRUE')){
+  const sslOptions = {
+    key: fs.readFileSync(process.env.SSL_KEY_FILE),
+    cert: fs.readFileSync(process.env.SSL_CERT_FILE)
+  };
+  server = https.createServer(sslOptions, app);
+} else {
+  console.warn('--> Server is NOT using SSL encryption, beware that your auth token can be seen by third parties <--');
+  server = http.createServer(app);
+}
 
 server.listen(port);
 server.on('error', onError);
