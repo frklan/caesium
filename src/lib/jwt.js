@@ -33,7 +33,7 @@ module.exports.createJWToken = (details) => {
 }
 
 module.exports.verifyJWT = (req, res, next) => {
-  const token = req.headers.token;
+  const token = req.headers.token || '';
  
   verifyJWTToken(token).then((decodedToken) => {
       req.user = decodedToken.data.user;
