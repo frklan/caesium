@@ -88,7 +88,7 @@ A JWT token can be manually generated with the following sequence:
 
 **Note** that the JWT token will default expire in 3600 seconds. A longer (or shorter) expiration time can be set with the option --ttl, refer to ```$  src/util/generateJwtToken --help``` for details. There is no way of invalidating JWT tokens unless it expires automatically, hence it is important to treat them as secrets.
 
-# SSL encryption
+## SSL encryption
 
 If the API is served openly on the internet it is recommended to encrypt all traffic with SSL. It's pretty easy to generate an SSL certificate with letsencrypt and it costs 0€! Yo do, however, need access to a domain or a public webserver. My preferred way of generating the SSL certificate is these easy steps:
 
