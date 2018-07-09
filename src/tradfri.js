@@ -15,19 +15,23 @@ function init() {
 
  discoverGateway()
   .then((g) => {
+    if(!g)
+      Promise.reject(`Gateway not found (${gw}`);
+
     gw = g;
     console.log('gateway is: ' + JSON.stringify(gw));
-  })
+  }, error)
   .then(authenticate, error )
   .then(connectToGw, error)
   .then(subscribeGw, error)
-  .then(() => t.clearInterval() )
+  //.then(() => t.clearInterval() )
   .catch((e) => console.log('error in promise ' + e))
 
 }
 
 function error(e) {
-  console.log(`we have an error: ${e}`);
+  console.trace(`we have an error: ${e.stack}`);
+  process.exit();
 }
   
 function authenticate() {
@@ -87,7 +91,8 @@ function onConnectionLost() {
   // init();
   console.log('------> connection lost!');
   tfClient.destroy();
-  t = setInterval(init, 5000);
+  //t = setInterval(init, 5000);
+  process.exit();
 }
   
 
