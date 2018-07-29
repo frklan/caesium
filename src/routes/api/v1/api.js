@@ -6,7 +6,20 @@ const verifyJWT = require('../../../lib/jwt.js').verifyJWT;
 
 var api = express.Router();
 
-api.all('*', verifyJWT);
+// CORS settings on all request methods.
+api.all('*', (req, res, next) => {
+  console.log(req.method);
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,PUT,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "token, content-type");
+  next();
+});
+
+// Do auth cgeck only on GET and PUT, i.e. not on OPTIONS,
+// chrome runtime (e.g. node/electron) needs OPTIONS to be 
+// open and we can't set custom headers on those requests..
+api.get('*', verifyJWT);
+api.put('*', verifyJWT);
 
 api.get('/', function(req, res, next) {
   res.json({ error: 'Hello! Nothing to see here..' });
