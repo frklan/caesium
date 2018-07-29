@@ -13,6 +13,7 @@ var app = express();
 app.use(logger('common'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.disable('x-powered-by');
 
 app.use('/login', login);
 app.use('/api/v1', apiv1);
