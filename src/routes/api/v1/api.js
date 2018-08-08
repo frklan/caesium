@@ -8,7 +8,6 @@ var api = express.Router();
 
 // CORS settings on all request methods.
 api.all('*', (req, res, next) => {
-  console.log(req.method);
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,PUT,OPTIONS");
   res.header("Access-Control-Allow-Headers", "token, content-type");
@@ -30,8 +29,8 @@ api.get('/bulbs', (req, res, next) => {
     res.json(tradfri.getBulbs());
     res.status(200);
   } catch(e) {
-    res.state(500);
     res.json({error: 'error occured'});
+    res.status(500);
     console.log(e);
   }
 });
