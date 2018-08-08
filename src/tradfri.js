@@ -1,107 +1,120 @@
 'use strict'
-var fs = require('fs');
-const tradfriLib = require("node-tradfri-client");
-const TradfriClient = tradfriLib.TradfriClient;
-const discoverGateway = tradfriLib.discoverGateway;
+const { Accessory, AccessoryTypes, discoverGateway, TradfriClient, TradfriError, TradfriErrorCodes } = require("node-tradfri-client");
 
 let id = {identity: '', psk: ''};
-let tfClient = '';
-let gw = '';
-let t;
+let tfClient = {};
+let gw = {};
+let gwStatus = {status: 'offline'};
+var lightbulbs = [];
 
-const lightbulbs = [];
+const password = process.env.GW_PASSWORD;
 
-function init() {
-
- discoverGateway()
-  .then((g) => {
-    if(!g)
-      Promise.reject(`Gateway not found (${gw}`);
-
-    gw = g;
-    console.log('gateway is: ' + JSON.stringify(gw));
-  }, error)
-  .then(authenticate, error )
-  .then(connectToGw, error)
-  .then(subscribeGw, error)
-  //.then(() => t.clearInterval() )
-  .catch((e) => console.log('error in promise ' + e))
-
+function logger(msg, sev) {
+  if(sev != 'silly'){
+    console.log(`${sev} - ${msg}`);
+  }
 }
 
-function error(e) {
-  console.trace(`we have an error: ${e.stack}`);
-  process.exit();
-}
-  
-function authenticate() {
-  return new Promise(function(resolve, reject) {
-    const password = process.env.GW_PASSWORD; 
+async function init() {
+  try {
+    gw = await discoverGateway(2000);
+    if(gw === null) {
+      throw new Error('can\'t find gateway');
+    }
 
-    console.log('autenticating..' + password);
-    tfClient = new TradfriClient(gw.host, {watchConnection: true});
+    const connectionWatcherOptions = {
+      pingInterval: 1000, // DEFAULT: 10000ms
+      failedPingCountUntilOffline: 2, // DEFAULT: 1
+      failedPingBackoffFactor: 1, // DEFAULT: 1.5
+      reconnectionEnabled: true, // DEFAULT: enabled
+      offlinePingCountUntilReconnect: 3, // DEFAULT: 3
+      maximumReconnects: 3, // DEFAULT: infinite
+      maximumConnectionAttempts: 3, // DEFAULT: infinite
+      connectionInterval: 1000, // DEFAULT: 10000ms
+      failedConnectionBackoffFactor: 1, // DEFAULT: 1.5
+    }
+    const tradfriOptions = {
+      //customLogger: logger,
+      watchConnection: connectionWatcherOptions,
+    }
+
+    const tradfri = new TradfriClient(gw.addresses[0], tradfriOptions);
+    id = await tradfri.authenticate(password);
+
+    await tradfri.connect(id.identity, id.psk);
+
+    tradfri.on("error", onError);
+    tradfri.on('connection lost', onConnectionLost);
+    tradfri.on('connection failed', onConnectionFailed);
+    tradfri.on('give up', onGiveUp);
+    tradfri.on('connection alive', onConnectionAlive);
     
-    tfClient.authenticate(password)
-    .then((i) => { 
-      id = i;
-      console.log('authenticated, id = ' + id.identity, ' psk = ' + id.psk);
-      resolve();
-    })
-    .catch((e) => {
-        console.log('error auth: ' + e);
-        reject(e);
-    });
-  });  
+    tradfri.on('device updated', onDeviceUpdated)
+    tradfri.on('device removed', onDeviceRemoved)
+    
+    tradfri.observeDevices();
+    
+    gwStatus = {status: 'online'};
+
+  } catch(e) {
+    console.error('-----> ' + e + '\n' + new Error().stack);
+    process.exit();
+  }
 }
 
-function connectToGw(){
-  return new Promise(function(resolve, reject) {
-    tfClient.connect(id.identity, id.psk)
-    .then(() => {
-      console.log('connected to GW');
-      resolve();
-    });
-  });
-}
+function onError(e) {
+  console.error('Error:');
 
-function subscribeGw() {
-  return new Promise(function(resolve, reject) {
-    tfClient.on('device updated', onDeviceUpdated);
-    tfClient.on('connection lost', onConnectionLost);
-    tfClient.observeDevices();
-  })
-}
-
-function onDeviceUpdated(device) {
-  // We currently store only bulbs! 
-  if(device.type === 2) {
-    // store this device (replace if already in array)
-    const index = lightbulbs.findIndex((e) => e.instanceId === device.instanceId);
-    if(index != -1)
-      lightbulbs.splice(index, 1, device);
-    else
-      lightbulbs.push(device);
+  if (e instanceof TradfriError) {
+    // handle the error depending on `e.code`
+  } else {
+      // handle the error as you normally would.
   }
 }
 
 function onConnectionLost() {
-  // lightbulbs = {};
-  // bulbList = {};
-  // tfClient.destroy();
-  // init();
-  console.log('------> connection lost!');
-  tfClient.destroy();
-  //t = setInterval(init, 5000);
-  process.exit();
-}
-  
-
-function onGwError(err) {
-  console.log('GW Error, restarting');
-  tfClient.destroy();
-  //t = setInterval(init, 5000);
+  console.log('onConnectionLost');
+  gwStatus = {status: 'offline'};
 }
 
+function onConnectionFailed(connectionAttempt, maximumAttempts){
+  console.log('onConnectionFailed');
+  lightbulbs = [];
+  gwStatus = {status: 'offline'};
+}
+
+function onGiveUp() {
+  console.log('onGiveUp');
+  lightbulbs = [];
+  gwStatus = {status: 'offline'};
+}
+
+function onConnectionAlive() {
+  console.log('onConnectionAlive');
+  gwStatus = {status: 'online'};
+}
+
+function onDeviceUpdated(device) {
+  console.log('onDeviceUpdated:');
+  if(device.type === 2) { // we have a light bulb.
+    console.log(`Light bulb:\n\tname: ${device.name}`)
+    const index = lightbulbs.findIndex((bulb) => bulb.instanceId == device.instanceId);
+    console.log(`we have this bulb at index ${index}`);
+    if( index== -1) { // we currently don't know this bulb..
+      lightbulbs.push(device);
+    } else { // already known, replace.
+      lightbulbs.splice(index, 1, device);
+    }
+  } 
+}
+
+function onDeviceRemoved(instanceId) {
+  const index = lightbulbs.findIndex((bulb) => bulb.instanceId == instanceId);
+  if(index != -1) {
+    console.log(`Removing bulb at index ${index}`);
+    lightbulbs.splice(index, 1);
+  }
+}
 
 // Init module:
 init();
@@ -123,6 +136,7 @@ function getBulbs() {
         light: bulb.lightList[0] 
       };
     });
+
 }
 
 
@@ -163,27 +177,3 @@ module.exports.toggleBulb = toggleBulb;
 module.exports.getBulb = getBulb;
 module.exports.getBulbs = getBulbs;
 module.exports.setBulbOnOff = setBulbOnOff;
-
-/*
-
-device updated", callback: DeviceUpdatedCallback): 
-    on(event: "device removed", callback: DeviceRemovedCallback): 
-    on(event: "group updated", callback: GroupUpdatedCallback): 
-    on(event: "group removed", callback: GroupRemovedCallback): 
-    on(event: "scene updated", callback: SceneUpdatedCallback): 
-    on(event: "scene removed", callback: SceneRemovedCallback): 
-    on(event: "gateway updated", callback: GatewayUpdatedCallback): 
-    on(event: "error", callback: ErrorCallback): 
-    on(event: "ping succeeded", callback: () => void): 
-    on(event: "ping failed", callback: PingFailedCallback): 
-    on(event: "connection alive", callback: () => void): 
-    on(event: "connection failed", callback: ConnectionFailedCallback): 
-    on(event: "connection lost", callback: () => void): 
-    on(event: "gateway offline", callback: () => void): 
-    on(event: "reconnecting", callback: ReconnectingCallback): 
-    on(event: "give up", callback: () => void): 
-    on(event: "rebooting", callback: RebootNotificationCallback): 
-    on(event: "firmware update available", callback: FirmwareUpdateNotificationCallback): 
-    on(event: "internet connectivity changed"
-
-    */
