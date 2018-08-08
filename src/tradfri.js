@@ -19,7 +19,7 @@ async function init() {
   try {
     gw = await discoverGateway(2000);
     if(gw === null) {
-      throw new Error('can\'t find gateway');
+      throw new Error('Can\'t find gateway');
     }
 
     const connectionWatcherOptions = {
@@ -40,7 +40,6 @@ async function init() {
 
     const tradfri = new TradfriClient(gw.addresses[0], tradfriOptions);
     id = await tradfri.authenticate(password);
-
     await tradfri.connect(id.identity, id.psk);
 
     tradfri.on("error", onError);
@@ -51,13 +50,11 @@ async function init() {
     
     tradfri.on('device updated', onDeviceUpdated)
     tradfri.on('device removed', onDeviceRemoved)
-    
     tradfri.observeDevices();
-    
-    gwStatus = {status: 'online'};
 
+    gwStatus = {status: 'online'};
   } catch(e) {
-    console.error('-----> ' + e + '\n' + new Error().stack);
+    console.error(`Unhandled error: ${e}\nExiting`);
     process.exit();
   }
 }
@@ -65,41 +62,35 @@ async function init() {
 function onError(e) {
   console.error('Error:');
 
-  if (e instanceof TradfriError) {
-    // handle the error depending on `e.code`
-  } else {
-      // handle the error as you normally would.
-  }
+  /* TODO; do proper error handling.. */
+  // if (e instanceof TradfriError) {
+  //   // handle the error depending on `e.code`
+  // } else {
+  //     // handle the error as you normally would.
+  // }
 }
 
 function onConnectionLost() {
-  console.log('onConnectionLost');
   gwStatus = {status: 'offline'};
 }
 
 function onConnectionFailed(connectionAttempt, maximumAttempts){
-  console.log('onConnectionFailed');
   lightbulbs = [];
   gwStatus = {status: 'offline'};
 }
 
 function onGiveUp() {
-  console.log('onGiveUp');
   lightbulbs = [];
   gwStatus = {status: 'offline'};
 }
 
 function onConnectionAlive() {
-  console.log('onConnectionAlive');
   gwStatus = {status: 'online'};
 }
 
 function onDeviceUpdated(device) {
-  console.log('onDeviceUpdated:');
   if(device.type === 2) { // we have a light bulb.
-    console.log(`Light bulb:\n\tname: ${device.name}`)
     const index = lightbulbs.findIndex((bulb) => bulb.instanceId == device.instanceId);
-    console.log(`we have this bulb at index ${index}`);
     if( index== -1) { // we currently don't know this bulb..
       lightbulbs.push(device);
     } else { // already known, replace.
