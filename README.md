@@ -144,34 +144,41 @@ $ curl https://[YOUR-DOMAIN]:5000/api/v1/bulbs -X GET -H "token: eyJhbGciOiJIUz.
 Response:
 
 ```shell
-[
-    {
-        "name": "Table",
-        "id": 65540,
-        "light": {
-            "onOff": false,
-            "dimmer": 17.3,
-            "color": "f1e0b5",
-            "colorTemperature": 58.8,
-            "colorX": 30138,
-            "colorY": 26909,
-            "transitionTime": 0.5
-        }
+{
+    "gateway": {
+        "status": "online",
+        "name": "gw-xxxxxxxxxxxx",
+        "host": "TRADFRI-Gateway-xxxxxxxxxxxx.local"
     },
-    {
-        "name": "Window",
-        "id": 65541,
-        "light": {
-            "onOff": true,
-            "dimmer": 7.9,
-            "color": "efd275",
-            "colorTemperature": 100,
-            "colorX": 30138,
-            "colorY": 26909,
-            "transitionTime": 0.5
-        }
-    }
-]
+    "lightbulbs": [
+        {
+            "name": "Table",
+            "id": 65537,
+            "lastSeen": 1533745439,
+            "light": {
+                "onOff": false,
+                "dimmer": 22.8,
+                "color": "f1e0b5",
+                "colorTemperature": 0,
+                "colorX": 0,
+                "colorY": 0,
+                "transitionTime": 0.5
+            }
+        },
+        {
+            "name": "Window",
+            "id": 65539,
+            "lastSeen": 1533667468,
+            "light": {
+                "onOff": false,
+                "dimmer": 0,
+                "color": "0",
+                "colorTemperature": 0,
+                "colorX": 0,
+                "colorY": 0,
+                "transitionTime": 0.5
+            }
+        },
 `
 ```
 
@@ -188,21 +195,30 @@ $ curl https://[YOUR-DOMAIN]:5000/api/v1/bulb/65530 -X GET -H "token: eyJhbGciOi
 Response:
 
 ```shell
-[
-    {
-        "name": "Table",
-        "id": 65530,
-        "light": {
-            "onOff": false,
-            "dimmer": 17.3,
-            "color": "f1e0b5",
-            "colorTemperature": 58.8,
-            "colorX": 30138,
-            "colorY": 26909,
-            "transitionTime": 0.5
+{
+    "gateway": {
+        "status": "online",
+        "name": "gw-xxxxxxxxxxxx",
+        "host": "TRADFRI-Gateway-xxxxxxxxxxxx.local"
+    },
+    "lightbulbs": [
+        {
+            "name": "Window",
+            "id": 65539,
+            "lastSeen": 1533667468,
+            "light": {
+                "onOff": false,
+                "dimmer": 0,
+                "color": "0",
+                "colorTemperature": 0,
+                "colorX": 0,
+                "colorY": 0,
+                "transitionTime": 0.5
+            }
+            }
         }
-    }
-]
+    ]
+}
 ```
 
 ### POST api/v1/bulb/[bulb id]/toggle
@@ -218,7 +234,14 @@ $ curl https://[YOUR-DOMAIN]:5000/api/v1/bulb/65530/toggle -X POST -H "token: ey
 Response:
 
 ```shell
-"{status: done}"
+{
+    "gateway": {
+        "status": "online",
+        "name": "gw-xxxxxxxxxxxx",
+        "host": "TRADFRI-Gateway-xxxxxxxxxxxx.local"
+    },
+    "status": "done"
+}
 ```
 
 ### POST api/v1/bulb/[bulb id]/[ON] || [OFF]
@@ -234,7 +257,14 @@ $ curl https://[YOUR-DOMAIN]:5000/api/v1/bulb/65530/ON -X POST -H "token: eyJhbG
 Response:
 
 ```shell
-"{status: done}"
+{
+    "gateway": {
+        "status": "online",
+        "name": "gw-xxxxxxxxxxxx",
+        "host": "TRADFRI-Gateway-xxxxxxxxxxxx.local"
+    },
+    "status": "done"
+}
 ```
 
 # TODO's

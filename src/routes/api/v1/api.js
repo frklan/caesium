@@ -37,7 +37,6 @@ api.get('/bulbs', (req, res, next) => {
 
 api.get('/bulb/:id', (req, res, next) => {
   const id = parseInt(req.params.id);
-    
   try {
     res.json(tradfri.getBulb(id));
     res.status(200);
@@ -59,15 +58,19 @@ api.put('/bulb/:id/toggle', (req, res, next) => {
   const id = parseInt(req.params.id);
 
   try {
-    tradfri.toggleBulb(id);
-    res.json({status: 'done'});
+    res.json(tradfri.toggleBulb(id));
+    res.status(200);
   } catch(e) {
-    if(e === 'no bulb') {
+    console.log(e);
+    if(e === 'no such bulb') {
+      res.json({error: 'no such bulb'});
       res.status(404);
-      res.json({error: 'no bulb here'});
       next();
-    }
-    else {
+    } else if(e === 'gateway offline') {
+      res.json({error: 'gateway offline'});
+      res.status(404);
+      next();
+    } else {
       res.status(500);
       res.json({error: 'internal server error'});
       next();
@@ -82,15 +85,18 @@ api.put('/bulb/:id/:state', (req, res, next) => {
   const state = req.params.state;
 
   try {
-    tradfri.setBulbOnOff(id, state);
-    res.json({status: 'done'});
+    res.json(tradfri.setBulbOnOff(id, state));
   } catch(e) {
-    if(e === 'no bulb') {
+    console.log(e);
+    if(e === 'no such bulb') {
+      res.json({error: 'no such bulb'});
       res.status(404);
-      res.json({error: 'no bulb here'});
       next();
-    }
-    else {
+    } else if(e === 'gateway offline') {
+      res.json({error: 'gateway offline'});
+      res.status(404);
+      next();
+    } else {
       res.status(500);
       res.json({error: 'internal server error'});
       next();

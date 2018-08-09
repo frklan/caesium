@@ -110,6 +110,38 @@ function onDeviceRemoved(instanceId) {
 // Init module:
 init();
 
+function getGatewayStatusAsJson() {
+  return {
+    status: gwStatus.status || '',
+    name: gw.name || '',
+    host: gw.host || '',
+  };
+}
+
+function convertBulbListToApiResponse(bulbList) {
+  const bulbStatus = bulbList.map(bulb => {
+    return {
+      name: bulb.name,
+      id: bulb.instanceId,
+      lastSeen: bulb.lastSeen,
+      light: {
+        onOff: bulb.lightList[0].onOff || false,
+        dimmer: bulb.lightList[0].dimmer || 0,
+        color: bulb.lightList[0].color || "0",
+        colorTemperature: bulb.lightList[0].colorTemperature || 0,
+        colorX: bulb.lightList[0].colorX || 0,
+        colorY: bulb.lightList[0].colorY || 0,
+        transitionTime: bulb.lightList[0].transitionTime || 0
+      },  
+    };
+  });
+
+  return {
+    gateway: getGatewayStatusAsJson(),
+    lightbulbs: bulbStatus,
+  };
+}
+
 /* ****************************************** */
 /* Here's the public interface to the module: */
 /* ****************************************** */
@@ -119,20 +151,13 @@ init();
  */
 function getBulbs() {
   //Filter out only lighbulbs, return as new array including only specific properties
-  return lightbulbs.filter((device) => device.type === 2)
-    .map(bulb => {
-      return {
-        name: bulb.name,
-        id: bulb.instanceId,
-        light: bulb.lightList[0] 
-      };
-    });
-
+  return convertBulbListToApiResponse(lightbulbs.filter((device) => device.type === 2));
+    
 }
 
 
 function getBulb(id) {
-  return getBulbs().filter(device => device.id === id);
+  return convertBulbListToApiResponse(lightbulbs.filter(device => (device.type === 2 && device.instanceId == id)));
 }
 
 /**
@@ -142,26 +167,46 @@ function getBulb(id) {
  * @param {*} state indicates if we want the bulb to turn on or off
  */
 function setBulbOnOff(id, state) {
-  const bulb = lightbulbs.filter((device) => device.instanceId === id)[0];
-  //console.log(bulb);
-  if(bulb === undefined)
-    throw new Error('no bulb');
+  if(gwStatus.status != 'online') {
+    throw 'gateway offline';
+  }
 
-  if(state === 'on')
+  const bulb = lightbulbs.filter((device) => device.instanceId === id)[0];
+  if(bulb === undefined) {
+    throw 'no such bulb';
+  }
+
+
+  if(state === 'on') {
     bulb.lightList[0].turnOn();
-  else if(state === 'off')
+  } else if(state === 'off') {
     bulb.lightList[0].turnOff();
-  else 
-    throw new Error('unkown state');
+  } else {
+    throw 'unkown state';
+  }
+
+  return {
+    gateway: getGatewayStatusAsJson(),
+    status: 'done',
+  }
 }
 
 function toggleBulb(id) {
-  const bulb = lightbulbs.filter((device) => device.instanceId === id)[0];
-  //console.log(bulb);
-  if(bulb === undefined)
-    throw new Error('no bulb');
+  if(gwStatus.status != 'online') {
+    throw 'gateway offline';
+  }
 
+  const bulb = lightbulbs.filter((device) => device.instanceId === id)[0];
+  if(bulb === undefined) {
+    throw 'no such bulb';
+  }
+
+  
   bulb.lightList[0].toggle();
+  return {
+    gateway: getGatewayStatusAsJson(),
+    status: 'done',
+  }
 }
 
 module.exports.toggleBulb = toggleBulb;
