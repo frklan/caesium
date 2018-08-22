@@ -64,3 +64,5 @@ package-lock.json
 
 # ssl cert and keystore etc
 ssl/
+
+.DS_Store
