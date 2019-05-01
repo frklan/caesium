@@ -53,9 +53,15 @@ function verifyJWTToken(token) {
     throw ('Not authorized');
   }
   return new Promise((resolve, reject) => {
-    jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) =>  {
+    jwt.verify(token, process.env.JWT_SECRET, {ignoreNotBefore: false, ignoreExpiration: false}, (err, decodedToken) =>  {
       if (err || !decodedToken) {
         return reject(err);
+      } else if(decodedToken.exp === undefined) { 
+        // bug in JWT library, a token without an
+        // expiration field will pass verification
+        // There's an old pr for this:
+        //  https://github.com/auth0/node-jsonwebtoken/pull/257
+        reject("no exp");
       }
       resolve(decodedToken);
     })
