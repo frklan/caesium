@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 var express = require('express');
 const tradfri = require('../../../tradfri');

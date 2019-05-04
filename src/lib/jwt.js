@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /* Helper functions for JWT authorization mostly copied from:
 * https://medium.com/@patrykcieszkowski/jwt-authentication-in-express-js-ee898b87a60

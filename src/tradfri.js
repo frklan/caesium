@@ -1,19 +1,12 @@
-'use strict'
-const { Accessory, AccessoryTypes, discoverGateway, TradfriClient, TradfriError, TradfriErrorCodes } = require("node-tradfri-client");
+'use strict';
+const { discoverGateway, TradfriClient } = require("node-tradfri-client");
 
 let id = {identity: '', psk: ''};
-let tfClient = {};
 let gw = {};
 let gwStatus = {status: 'offline'};
 var lightbulbs = [];
 
 const password = process.env.GW_PASSWORD;
-
-function logger(msg, sev) {
-  if(sev != 'silly'){
-    console.log(`${sev} - ${msg}`);
-  }
-}
 
 async function init() {
   try {
