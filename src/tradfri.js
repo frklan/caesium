@@ -82,7 +82,7 @@ function onConnectionAlive() {
 }
 
 function onDeviceUpdated(device) {
-  if(device.type === 2) { // we have a light bulb.
+  if(device.type === 2 || device.type === 3) { // we have a light bulb or an outlet.
     const index = lightbulbs.findIndex((bulb) => bulb.instanceId == device.instanceId);
     if( index== -1) { // we currently don't know this bulb..
       lightbulbs.push(device);
@@ -113,20 +113,37 @@ function getGatewayStatusAsJson() {
 
 function convertBulbListToApiResponse(bulbList) {
   const bulbStatus = bulbList.map(bulb => {
-    return {
-      name: bulb.name,
-      id: bulb.instanceId,
-      lastSeen: bulb.lastSeen,
-      light: {
-        onOff: bulb.lightList[0].onOff || false,
-        dimmer: bulb.lightList[0].dimmer || 0,
-        color: bulb.lightList[0].color || "0",
-        colorTemperature: bulb.lightList[0].colorTemperature || 0,
-        colorX: bulb.lightList[0].colorX || 0,
-        colorY: bulb.lightList[0].colorY || 0,
-        transitionTime: bulb.lightList[0].transitionTime || 0
-      },  
-    };
+    if(bulb.type === 2) {
+      return {
+        name: bulb.name,
+        id: bulb.instanceId,
+        lastSeen: bulb.lastSeen,
+        light: {
+          onOff: bulb.lightList[0].onOff || false,
+          dimmer: bulb.lightList[0].dimmer || 0,
+          color: bulb.lightList[0].color || "0",
+          colorTemperature: bulb.lightList[0].colorTemperature || 0,
+          colorX: bulb.lightList[0].colorX || 0,
+          colorY: bulb.lightList[0].colorY || 0,
+          transitionTime: bulb.lightList[0].transitionTime || 0
+        },  
+      };
+    } else if(bulb.type === 3) {
+      return {
+        name: bulb.name,
+        id: bulb.instanceId,
+        lastSeen: bulb.lastSeen,
+        light: {
+          onOff: bulb.plugList[0].onOff || false,
+          dimmer: bulb.plugList[0].dimmer || 0,
+          color: "0",
+          colorTemperature: 0,
+          colorX: 0,
+          colorY: 0,
+          transitionTime: 0
+        },  
+      };
+    }
   });
 
   return {
@@ -143,14 +160,12 @@ function convertBulbListToApiResponse(bulbList) {
  * Returns a list with the current bulbs 
  */
 function getBulbs() {
-  //Filter out only lighbulbs, return as new array including only specific properties
-  return convertBulbListToApiResponse(lightbulbs.filter((device) => device.type === 2));
-    
+  return convertBulbListToApiResponse(lightbulbs);
 }
 
 
 function getBulb(id) {
-  return convertBulbListToApiResponse(lightbulbs.filter(device => (device.type === 2 && device.instanceId == id)));
+  return convertBulbListToApiResponse(lightbulbs.filter(device => (device.instanceId == id)));
 }
 
 /**
@@ -169,13 +184,22 @@ function setBulbOnOff(id, state) {
     throw 'no such bulb';
   }
 
-
-  if(state === 'on') {
-    bulb.lightList[0].turnOn();
-  } else if(state === 'off') {
-    bulb.lightList[0].turnOff();
-  } else {
-    throw 'unkown state';
+  if(bulb.type === 2) {
+    if(state === 'on') {
+      bulb.lightList[0].turnOn();
+    } else if(state === 'off') {
+      bulb.lightList[0].turnOff();
+    } else {
+      throw 'unkown state';
+    }
+  } else if(bulb.type === 3) {
+    if(state === 'on') {
+      bulb.plugList[0].turnOn();
+    } else if(state === 'off') {
+      bulb.plugList[0].turnOff();
+    } else {
+      throw 'unkown state';
+    }
   }
 
   return {
@@ -194,8 +218,12 @@ function toggleBulb(id) {
     throw 'no such bulb';
   }
 
-  
-  bulb.lightList[0].toggle();
+  if(bulb.type === 2) {
+    bulb.lightList[0].toggle();
+  } else if(bulb.type === 3) {
+    bulb.plugList[0].toggle();
+  }
+
   return {
     gateway: getGatewayStatusAsJson(),
     status: 'done',

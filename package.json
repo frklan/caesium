@@ -1,6 +1,6 @@
 {
   "name": "caesium",
-  "version": "0.1.0-rc4",
+  "version": "0.2.0-rc1",
   "private": true,
   "description": "A Ikea Trådfri API",
   "author": "Fredrik Andersson",
@@ -17,7 +17,7 @@
     "lodash": "^4.17.10",
     "morgan": "~1.9.0",
     "node-2fa": "^1.1.2",
-    "node-tradfri-client": "^1.2.1"
+    "node-tradfri-client": "^1.6.0"
   },
   "devDependencies": {
     "minimist": "^1.2.0",
